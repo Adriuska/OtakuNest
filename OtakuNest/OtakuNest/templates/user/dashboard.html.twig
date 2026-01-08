@@ -1,0 +1,171 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard - OtakuNest{% endblock %}
+
+{% block body %}
+<div class="mb-4">
+    <h1 class="h2 fw-bold" style="background: linear-gradient(135deg, #7c3aed, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+        ✨ Bienvenido, {{ app.user.firstName ?? app.user.username }}
+    </h1>
+    <p class="text-muted">Tu espacio personal para organizar animes</p>
+</div>
+
+<div class="row g-4 mb-5">
+    <!-- Estadísticas rápidas -->
+    <div class="col-md-3">
+        <div class="glass-card p-4 text-center">
+            <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #7c3aed, #6d28d9); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                <i class="fa-solid fa-bookmark fa-lg" style="color: white;"></i>
+            </div>
+            <h5 class="fw-bold">{{ libraries|length }}</h5>
+            <p class="text-muted small mb-3">Bibliotecas</p>
+            <a href="{{ path('app_library_list') }}" class="btn btn-sm btn-warning w-100 fw-bold">Ver todas</a>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="glass-card p-4 text-center">
+            <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #ec4899, #be185d); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                <i class="fa-solid fa-heart fa-lg" style="color: white;"></i>
+            </div>
+            <h5 class="fw-bold">{{ favorites|length }}</h5>
+            <p class="text-muted small mb-3">Favoritos</p>
+            <a href="{{ path('app_favorites') }}" class="btn btn-sm btn-danger w-100 fw-bold">Ver todos</a>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="glass-card p-4 text-center">
+            <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                <i class="fa-solid fa-user fa-lg" style="color: white;"></i>
+            </div>
+            <h5 class="fw-bold">Perfil</h5>
+            <p class="text-muted small mb-3">Configuración</p>
+            <a href="{{ path('app_profile') }}" class="btn btn-sm btn-success w-100 fw-bold">Editar</a>
+        </div>
+    </div>
+</div>
+
+<!-- Bibliotecas -->
+{% if libraries|length > 0 %}
+<section class="mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="h3 fw-bold" style="background: linear-gradient(135deg, #7c3aed, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+            📚 Mis bibliotecas
+        </h2>
+        <a href="{{ path('app_library_create') }}" class="btn btn-sm" style="background: linear-gradient(135deg, #7c3aed, #6d28d9); color: white; border: none;">
+            <i class="fa-solid fa-plus"></i> Nueva biblioteca
+        </a>
+    </div>
+    
+    <div class="row g-4">
+        {% for library in libraries %}
+        <div class="col-md-6 col-lg-4">
+            <div class="glass-card p-4 hover-effect">
+                <h5 class="fw-bold mb-2">{{ library.name }}</h5>
+                <div class="badge mb-3" style="background: linear-gradient(135deg, #7c3aed, #6d28d9);">
+                    <i class="fas fa-film"></i> {{ library.items|length }} animes
+                </div>
+                {% if library.description %}
+                <p class="text-secondary small mb-3">{{ library.description ? (library.description|slice(0, 80) ~ (library.description|length > 80 ? '…' : '')) : '' }}</p>
+                {% endif %}
+                <a href="{{ path('app_library_show', {id: library.id}) }}" class="btn btn-sm btn-warning w-100 fw-bold">
+                    Ver biblioteca
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% else %}
+<section class="mb-5">
+    <div class="glass-card p-5 text-center">
+        <i class="fa-solid fa-bookmark fa-3x text-muted mb-3"></i>
+        <p class="text-muted mb-4">No tienes bibliotecas todavía</p>
+        <a href="{{ path('app_library_create') }}" class="btn" style="background: linear-gradient(135deg, #7c3aed, #ec4899); color: white; border: none;">
+            <i class="fa-solid fa-plus"></i> Crear mi primera biblioteca
+        </a>
+    </div>
+</section>
+{% endif %}
+
+<!-- Favoritos recientes -->
+{% if favorites|length > 0 %}
+<section>
+    <h2 class="h3 fw-bold mb-4" style="background: linear-gradient(135deg, #ec4899, #f472b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+        ❤️ Mis favoritos
+    </h2>
+    
+    <div class="row g-4">
+        {% for favorite in favorites|slice(0, 6) %}
+        <div class="col-lg-2 col-md-3 col-sm-4">
+            <div class="glass-card overflow-hidden h-100 hover-effect">
+                <div style="height: 320px; overflow: hidden; background: rgba(124, 58, 237, 0.1);">
+                    {% if favorite.image %}
+                    <img src="{{ favorite.image }}" alt="{{ favorite.title }}" 
+                         class="w-100 h-100" style="object-fit: cover; object-position: center; transition: transform 0.3s ease; image-rendering: crisp-edges;" loading="lazy">
+                    {% else %}
+                    <div class="w-100 h-100 d-flex align-items-center justify-content-center">
+                        <i class="fa-solid fa-image text-muted fa-3x"></i>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="p-2">
+                    <h6 class="fw-bold mb-2 text-truncate small">{{ favorite.title }}</h6>
+                    <button type="button" class="btn btn-xs btn-danger w-100 delete-favorite-btn" data-favorite-id="{{ favorite.id }}" style="font-size: 0.7rem; padding: 0.25rem 0.5rem;">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    {% if favorites|length > 6 %}
+    <div class="text-center mt-4">
+        <a href="{{ path('app_favorites') }}" class="btn btn-outline-warning">
+            Ver todos mis favoritos ({{ favorites|length }})
+        </a>
+    </div>
+    {% endif %}
+</section>
+{% endif %}
+
+<script>
+// Event listener para eliminar favoritos
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.delete-favorite-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            
+            const favoriteId = this.getAttribute('data-favorite-id');
+            
+            if (!confirm('¿Estás seguro de eliminar este anime de tus favoritos?')) {
+                return;
+            }
+            
+            fetch('/favorite/' + favoriteId, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    // Recargar la página para actualizar el contador
+                    location.reload();
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            })
+            .catch(error => {
+                alert('Error al eliminar: ' + error.message);
+            });
+        });
+    });
+});
+</script>
+
+{% endblock %}

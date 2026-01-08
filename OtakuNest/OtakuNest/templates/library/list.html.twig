@@ -1,0 +1,94 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mis bibliotecas - OtakuNest{% endblock %}
+
+{% block body %}
+<div class="mb-4 d-flex justify-content-between align-items-center">
+    <div>
+        <h1 class="h2 fw-bold mb-1">Mis Bibliotecas</h1>
+        <p class="text-muted">Organiza tus animes como prefieras</p>
+    </div>
+    <a href="{{ path('app_library_create') }}" class="btn btn-warning">
+        <i class="fa-solid fa-plus"></i> Nueva biblioteca
+    </a>
+</div>
+
+{% if libraries|length > 0 %}
+<div class="row g-4">
+    {% for library in libraries %}
+    <div class="col-lg-6 col-md-12">
+        <div class="glass-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div class="flex-grow-1">
+                    <h5 class="fw-bold mb-1">{{ library.name }}</h5>
+                    <p class="text-muted small mb-0">📺 {{ library.items|length }} animes</p>
+                </div>
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-dark dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fa-solid fa-ellipsis"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{{ path('app_library_show', {id: library.id}) }}"><i class="fa-solid fa-eye"></i> Ver</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fa-solid fa-pen"></i> Editar</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form method="post" action="{{ path('app_library_delete', {id: library.id}) }}" style="display: inline;" onsubmit="return confirm('¿Eliminar esta biblioteca?');">
+                                <button type="submit" class="dropdown-item text-danger"><i class="fa-solid fa-trash"></i> Eliminar</button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            {% if library.description %}
+            <p class="text-secondary small mb-4">{{ library.description ? (library.description|slice(0, 120) ~ (library.description|length > 120 ? '…' : '')) : '' }}</p>
+            {% endif %}
+            
+            {% if library.items|length > 0 %}
+            <div class="mb-4">
+                <div class="row g-3">
+                    {% for item in library.items|slice(0, 4) %}
+                    <div class="col-3">
+                        {% if item.image %}
+                        <img src="{{ item.image }}" alt="{{ item.title }}" 
+                             class="w-100 rounded" style="height: 120px; object-fit: cover;" loading="lazy">
+                        {% else %}
+                        <div class="w-100 rounded bg-secondary d-flex align-items-center justify-content-center" style="height: 120px;">
+                            <i class="fa-solid fa-image text-muted"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    {% if library.items|length > 4 %}
+                    <div class="col-3">
+                        <div class="w-100 rounded bg-dark d-flex align-items-center justify-content-center" style="height: 120px;">
+                            <small class="text-muted fw-bold">+{{ library.items|length - 4 }}</small>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <p class="text-muted small mb-4 text-center">
+                <i class="fa-solid fa-inbox"></i> Biblioteca vacía
+            </p>
+            {% endif %}
+            
+            <a href="{{ path('app_library_show', {id: library.id}) }}" class="btn btn-warning w-100">
+                <i class="fa-solid fa-eye"></i> Ver biblioteca ({{ library.items|length }})
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="glass-card p-5 text-center">
+    <i class="fa-solid fa-bookmark fa-4x text-muted mb-4"></i>
+    <h3 class="fw-bold mb-2">No tienes bibliotecas</h3>
+    <p class="text-muted mb-4">Crea tu primera biblioteca para organizar tus animes</p>
+    <a href="{{ path('app_library_create') }}" class="btn btn-warning btn-lg">
+        <i class="fa-solid fa-plus"></i> Crear biblioteca
+    </a>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,393 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Catálogo de Animes - OtakuNest{% endblock %}
+
+{% block body %}
+<div class="mb-4">
+    <h1 class="h2 fw-bold mb-2">Catálogo de Animes</h1>
+    <p class="text-muted">+120 animes disponibles</p>
+    
+<!-- Buscador y filtros -->
+    <div class="glass-card p-4 mb-4">
+        <div class="row g-3">
+            <div class="col-md-10">
+                <input type="text" class="form-control form-control-dark" placeholder="Buscar anime por nombre..." id="searchInput">
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-warning w-100" id="clearFiltersBtn">Limpiar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lista de animes -->
+{% if animes|length > 0 %}
+<div class="row g-4" id="animeList">
+    {% for anime in animes %}
+    <div class="col-lg-4 col-md-6 col-sm-6" data-anime-card="true" data-anime-title="{{ anime.title }}" data-anime-type="{{ anime.type }}" data-anime-status="{{ anime.status }}" data-anime-id="{{ anime.id }}">
+        <div class="glass-card overflow-hidden h-100 transition-all hover-lift" style="cursor: pointer;">
+            {% if anime.image %}
+            <img src="{{ anime.image }}" alt="{{ anime.title }}" class="w-100" style="height: 320px; object-fit: cover; image-rendering: crisp-edges;" loading="lazy">
+            {% else %}
+            <div class="w-100 bg-secondary" style="height: 280px; display: flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-image fa-3x text-muted"></i>
+            </div>
+            {% endif %}
+            <div class="p-3">
+                <h5 class="fw-bold mb-2">{{ anime.title }}</h5>
+                
+                {% if anime.rating %}
+                <p class="text-warning mb-2 small">
+                    <i class="fa-solid fa-star"></i> {{ anime.rating|round(1) }}/10
+                </p>
+                {% endif %}
+                
+                {% if anime.year %}
+                <p class="text-muted mb-2 small"><i class="fa-solid fa-calendar"></i> {{ anime.year }}</p>
+                {% endif %}
+
+                <p class="text-muted mb-2 small">
+                    <i class="fa-solid fa-tv"></i> {{ anime.type }}
+                    {% if anime.episodes > 0 %}
+                    • {{ anime.episodes }} eps
+                    {% endif %}
+                </p>
+                
+                {% if anime.genres|length > 0 %}
+                <div class="mb-3">
+                    {% for genre in anime.genres|slice(0, 2) %}
+                    <span class="badge bg-secondary small">{{ genre }}</span>
+                    {% endfor %}
+                    {% if anime.genres|length > 2 %}
+                    <span class="badge bg-dark small">+{{ anime.genres|length - 2 }}</span>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="glass-card p-5 text-center">
+    <i class="fa-solid fa-search fa-3x text-muted mb-3"></i>
+    <p class="text-muted">No se encontraron animes</p>
+    <a href="{{ path('app_anime_list') }}" class="btn btn-outline-warning btn-sm">Limpiar filtros</a>
+</div>
+{% endif %}
+
+<style>
+    .form-control-dark,
+    .form-select-dark {
+        background-color: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #f3f4ff;
+    }
+    .form-control-dark:focus,
+    .form-select-dark:focus {
+        background-color: rgba(255, 255, 255, 0.08);
+        border-color: #a855f7;
+        color: #f3f4ff;
+        box-shadow: 0 0 0 0.25rem rgba(168, 85, 247, 0.25);
+    }
+    .form-control-dark::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+    .hover-lift {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .glass-card:hover.hover-lift {
+        transform: translateY(-8px);
+        box-shadow: 0 25px 50px rgba(168, 85, 247, 0.2);
+    }
+</style>
+
+<!-- Modal de detalles del anime -->
+<div class="modal fade" id="animeDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content bg-dark border-secondary" style="max-height: 85vh;">
+            <div class="modal-header border-secondary py-3">
+                <h5 class="modal-title" id="animeModalTitle">Cargando...</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" style="overflow-y: auto; max-height: calc(85vh - 80px);">
+                <div id="animeDetailContent">
+                    <div class="text-center">
+                        <div class="spinner-border text-warning" role="status">
+                            <span class="visually-hidden">Cargando...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-secondary py-2 gap-2 d-none">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de selección de biblioteca -->
+<div class="modal fade" id="librarySelectModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark border-info">
+            <div class="modal-header border-info">
+                <h5 class="modal-title text-info"><i class="fa-solid fa-book"></i> Seleccionar Biblioteca</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="librarySelectContent">
+                    <div class="text-center">
+                        <div class="spinner-border text-info" role="status">
+                            <span class="visually-hidden">Cargando...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let animeCache = {};
+let currentAnimeData = { id: null, title: null, image: null };
+
+// Obtener detalles del anime
+function loadAnimeDetails(animeId) {
+    const content = document.getElementById('animeDetailContent');
+    const titleEl = document.getElementById('animeModalTitle');
+    
+    if (animeCache[animeId]) {
+        renderAnimeDetails(animeCache[animeId]);
+        return;
+    }
+    
+    content.innerHTML = '<div class="text-center"><div class="spinner-border text-warning" role="status"><span class="visually-hidden">Cargando...</span></div></div>';
+    
+    fetch('/anime/' + animeId)
+        .then(response => response.json())
+        .then(result => {
+            if (result.success && result.data) {
+                animeCache[animeId] = result.data;
+                renderAnimeDetails(result.data);
+            } else {
+                content.innerHTML = '<p class="text-danger">Error al cargar detalles</p>';
+            }
+        })
+        .catch(error => {
+            content.innerHTML = '<p class="text-danger">Error: ' + error.message + '</p>';
+        });
+}
+
+// Renderizar detalles del anime con ambos botones
+function renderAnimeDetails(anime) {
+    const content = document.getElementById('animeDetailContent');
+    const titleEl = document.getElementById('animeModalTitle');
+    
+    currentAnimeData = { id: anime.id, title: anime.title, image: anime.image };
+    
+    if (titleEl) titleEl.textContent = anime.title || 'Sin título';
+    
+    let html = '<div class="row g-3">';
+    html += '<div class="col-md-4">';
+    html += '<img src="' + (anime.image || '') + '" alt="' + (anime.title || 'Anime') + '" class="w-100 rounded" style="height: 280px; object-fit: cover;">';
+    html += '</div>';
+    html += '<div class="col-md-8">';
+    html += '<h6 class="text-muted small mb-2">INFORMACIÓN</h6>';
+    html += '<p class="mb-1 small"><strong>Tipo:</strong> ' + (anime.type || 'N/A') + '</p>';
+    html += '<p class="mb-1 small"><strong>Estado:</strong> ' + (anime.status || 'N/A') + '</p>';
+    html += '<p class="mb-1 small"><strong>Episodios:</strong> ' + (anime.episodes || 'N/A') + '</p>';
+    html += '<p class="mb-1 small"><strong>Año:</strong> ' + (anime.year || 'N/A') + '</p>';
+    html += '<p class="mb-2 small"><strong>Rating:</strong> ' + (anime.rating ? anime.rating + '/10' : 'N/A') + '</p>';
+    
+    if (anime.genres && anime.genres.length > 0) {
+        html += '<div class="mb-3"><strong class="d-block text-muted small mb-1">Géneros:</strong>';
+        anime.genres.forEach(function(g) {
+            html += '<span class="badge bg-secondary me-1 mb-1">' + g + '</span>';
+        });
+        html += '</div>';
+    }
+    
+    // Botones de acción
+    html += '<div class="d-flex gap-2">';
+    html += '<button type="button" class="btn btn-warning btn-sm flex-fill" onclick="addToFavorites(' + anime.id + ', \'' + anime.title.replace(/'/g, "\\'") + '\', \'' + (anime.image || '').replace(/'/g, "\\'") + '\')"><i class="fa-solid fa-heart"></i> Favoritos</button>';
+    html += '<button type="button" class="btn btn-info btn-sm flex-fill" onclick="openLibrarySelector(' + anime.id + ', \'' + anime.title.replace(/'/g, "\\'") + '\', \'' + (anime.image || '').replace(/'/g, "\\'") + '\')"><i class="fa-solid fa-plus"></i> Biblioteca</button>';
+    html += '</div>';
+    
+    html += '</div></div>';
+    
+    if (anime.description) {
+        html += '<div class="mt-3"><h6 class="text-muted small mb-2">SINOPSIS</h6>';
+        html += '<p class="text-light" style="font-size: 0.85rem; line-height: 1.5; max-height: 120px; overflow-y: auto; margin-bottom: 0;">' + anime.description + '</p></div>';
+    }
+    
+    content.innerHTML = html;
+}
+
+// Agregar a favoritos
+function addToFavorites(animeId, animeTitle, animeImage) {
+    fetch('/anime/api/add-favorite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ anime_id: animeId, title: animeTitle, image: animeImage })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            showNotification('✓ ' + result.message, 'success');
+        } else {
+            showNotification('Error: ' + result.message, 'error');
+        }
+    })
+    .catch(error => showNotification('Error: ' + error.message, 'error'));
+}
+
+// Abrir selector de biblioteca
+function openLibrarySelector(animeId, animeTitle, animeImage) {
+    currentAnimeData = { id: animeId, title: animeTitle, image: animeImage };
+    
+    // Cerrar modal de detalles
+    const detailModal = bootstrap.Modal.getInstance(document.getElementById('animeDetailModal'));
+    if (detailModal) detailModal.hide();
+    
+    // Cargar bibliotecas
+    const content = document.getElementById('librarySelectContent');
+    content.innerHTML = '<div class="text-center"><div class="spinner-border text-info" role="status"><span class="visually-hidden">Cargando...</span></div></div>';
+    
+    fetch('/api/user/libraries')
+        .then(response => response.json())
+        .then(result => {
+            if (result.success && result.libraries) {
+                renderLibrarySelect(result.libraries);
+                const libModal = new bootstrap.Modal(document.getElementById('librarySelectModal'));
+                libModal.show();
+            } else {
+                content.innerHTML = '<p class="text-danger">Error: ' + result.message + '</p>';
+            }
+        })
+        .catch(error => {
+            content.innerHTML = '<p class="text-danger">Error: ' + error.message + '</p>';
+        });
+}
+
+// Renderizar selector de bibliotecas
+function renderLibrarySelect(libraries) {
+    const content = document.getElementById('librarySelectContent');
+    let html = '';
+    
+    if (libraries.length === 0) {
+        html = '<p class="text-muted">No tienes bibliotecas. <a href="/library/create">Crea una aquí</a></p>';
+    } else {
+        html = '<div class="d-grid gap-2">';
+        libraries.forEach(lib => {
+            html += '<button type="button" class="btn btn-outline-info text-start d-flex justify-content-between align-items-center" onclick="addAnimeToLibrary(\'' + lib.id + '\')"><span><i class="fa-solid fa-plus me-2"></i>' + lib.name + '</span><span class="badge bg-info text-dark">' + lib.items + '</span></button>';
+        });
+        html += '</div>';
+    }
+    
+    content.innerHTML = html;
+}
+
+// Agregar anime a biblioteca
+function addAnimeToLibrary(libraryId) {
+    fetch('/anime/api/add-library', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            anime_id: currentAnimeData.id,
+            title: currentAnimeData.title,
+            image: currentAnimeData.image,
+            library_id: libraryId
+        })
+    })
+    .then(response => response.json())
+    .then(result => {
+        const libModal = bootstrap.Modal.getInstance(document.getElementById('librarySelectModal'));
+        if (libModal) libModal.hide();
+        
+        if (result.success) {
+            showNotification('✓ ' + result.message, 'success');
+        } else {
+            showNotification('Error: ' + result.message, 'error');
+        }
+    })
+    .catch(error => showNotification('Error: ' + error.message, 'error'));
+}
+
+// Notificación
+function showNotification(message, type) {
+    const color = type === 'success' ? 'success' : 'danger';
+    const html = '<div class="alert alert-' + color + ' alert-dismissible fade show" role="alert">' + message + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
+    const container = document.createElement('div');
+    container.innerHTML = html;
+    container.style.position = 'fixed';
+    container.style.top = '20px';
+    container.style.right = '20px';
+    container.style.zIndex = '9999';
+    document.body.appendChild(container);
+    setTimeout(() => container.remove(), 3000);
+}
+
+// Event listeners para clickear tarjeta
+document.addEventListener('DOMContentLoaded', function() {
+    // Click en las tarjetas de anime
+    document.querySelectorAll('[data-anime-card]').forEach(card => {
+        card.addEventListener('click', function() {
+            const animeId = this.getAttribute('data-anime-id');
+            loadAnimeDetails(animeId);
+            const modal = new bootstrap.Modal(document.getElementById('animeDetailModal'));
+            modal.show();
+        });
+    });
+    
+    // Event listener para búsqueda
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', filterAnimes);
+    }
+    
+    // Botón limpiar
+    const clearBtn = document.getElementById('clearFiltersBtn');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function() {
+            if (searchInput) searchInput.value = '';
+            filterAnimes();
+        });
+    }
+});
+
+// Función de filtrado puramente en cliente - solo por nombre
+function filterAnimes() {
+    const searchValue = (document.getElementById('searchInput') ? document.getElementById('searchInput').value : '').toLowerCase();
+    const cards = document.querySelectorAll('[data-anime-card]');
+    let visibleCount = 0;
+    
+    cards.forEach(function(card) {
+        const title = (card.getAttribute('data-anime-title') || '').toLowerCase();
+        
+        if (title.includes(searchValue)) {
+            card.style.display = '';
+            visibleCount++;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+    
+    // Mostrar/ocultar mensaje de sin resultados
+    let noResults = document.getElementById('noResults');
+    if (visibleCount === 0 && cards.length > 0) {
+        if (!noResults) {
+            noResults = document.createElement('div');
+            noResults.id = 'noResults';
+            noResults.className = 'col-12';
+            noResults.innerHTML = '<div class="glass-card p-5 text-center"><i class="fa-solid fa-search fa-3x text-muted mb-3"></i><p class="text-muted">No se encontraron animes</p></div>';
+            document.getElementById('animeList').parentElement.appendChild(noResults);
+        } else {
+            noResults.style.display = '';
+        }
+    } else if (noResults) {
+        noResults.style.display = 'none';
+    }
+}
+</script>
+
+{% endblock %}

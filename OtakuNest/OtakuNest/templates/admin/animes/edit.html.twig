@@ -1,0 +1,94 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Editar anime - OtakuNest{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="glass-card p-5">
+            <h1 class="h2 fw-bold mb-4">Editar Anime</h1>
+            
+            <form method="post">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label for="title" class="form-label fw-bold">Título *</label>
+                        <input type="text" class="form-control form-control-dark" id="title" name="title" value="{{ anime.title }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="year" class="form-label fw-bold">Año</label>
+                        <input type="number" class="form-control form-control-dark" id="year" name="year" min="1900" value="{{ anime.year ?? '' }}">
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="description" class="form-label fw-bold">Descripción</label>
+                    <textarea class="form-control form-control-dark" id="description" name="description" rows="4">{{ anime.description ?? '' }}</textarea>
+                </div>
+                
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label for="coverUrl" class="form-label fw-bold">URL de la portada</label>
+                        <input type="url" class="form-control form-control-dark" id="coverUrl" name="coverUrl" value="{{ anime.coverUrl ?? '' }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="status" class="form-label fw-bold">Estado</label>
+                        <select class="form-select form-select-dark" id="status" name="status">
+                            <option value="announced" {% if anime.status == 'announced' %}selected{% endif %}>Anunciado</option>
+                            <option value="airing" {% if anime.status == 'airing' %}selected{% endif %}>En emisión</option>
+                            <option value="finished" {% if anime.status == 'finished' %}selected{% endif %}>Finalizado</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label for="totalEpisodes" class="form-label fw-bold">Total de episodios</label>
+                        <input type="number" class="form-control form-control-dark" id="totalEpisodes" name="totalEpisodes" min="0" value="{{ anime.totalEpisodes ?? '' }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="rating" class="form-label fw-bold">Rating (0-10)</label>
+                        <input type="number" class="form-control form-control-dark" id="rating" name="rating" min="0" max="10" step="0.1" value="{{ anime.rating ?? '' }}">
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="genres" class="form-label fw-bold">Géneros</label>
+                    <select class="form-select form-select-dark" id="genres" name="genres[]" multiple>
+                        {% for genre in genres %}
+                        <option value="{{ genre.id }}" {% if anime.genres.contains(genre) %}selected{% endif %}>
+                            {{ genre.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <small class="text-muted">Presiona Ctrl/Cmd para seleccionar múltiples</small>
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-warning fw-bold flex-grow-1">
+                        <i class="fa-solid fa-save"></i> Guardar cambios
+                    </button>
+                    <a href="{{ path('app_admin_animes') }}" class="btn btn-outline-light">
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control-dark,
+    .form-select-dark {
+        background-color: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #f3f4ff;
+    }
+    .form-control-dark:focus,
+    .form-select-dark:focus {
+        background-color: rgba(255, 255, 255, 0.08);
+        border-color: #a855f7;
+        color: #f3f4ff;
+        box-shadow: 0 0 0 0.25rem rgba(168, 85, 247, 0.25);
+    }
+</style>
+{% endblock %}

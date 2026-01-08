@@ -1,0 +1,64 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Crear biblioteca - OtakuNest{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="glass-card p-5">
+            <h1 class="h2 fw-bold mb-4">Crear Nueva Biblioteca</h1>
+            
+            <form method="post">
+                <div class="mb-4">
+                    <label for="name" class="form-label fw-bold">Nombre de la biblioteca *</label>
+                    <input type="text" class="form-control form-control-dark" id="name" name="name" 
+                           placeholder="Ej: Por ver, Favoritos, En progreso..." required>
+                    <small class="text-muted">Ejemplos: "Por ver", "Viendo", "Completados"</small>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="description" class="form-label fw-bold">Descripción</label>
+                    <textarea class="form-control form-control-dark" id="description" name="description" 
+                              rows="3" placeholder="Describe el propósito de esta biblioteca..."></textarea>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="visibility" class="form-label fw-bold">Visibilidad</label>
+                    <select class="form-select form-select-dark" id="visibility" name="visibility">
+                        <option value="private" selected>Privada (Solo yo puedo verla)</option>
+                        <option value="public">Pública (Otros usuarios pueden verla)</option>
+                    </select>
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-warning fw-bold flex-grow-1">
+                        <i class="fa-solid fa-check"></i> Crear biblioteca
+                    </button>
+                    <a href="{{ path('app_library_list') }}" class="btn btn-outline-light">
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control-dark,
+    .form-select-dark {
+        background-color: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #f3f4ff;
+    }
+    .form-control-dark:focus,
+    .form-select-dark:focus {
+        background-color: rgba(255, 255, 255, 0.08);
+        border-color: #a855f7;
+        color: #f3f4ff;
+        box-shadow: 0 0 0 0.25rem rgba(168, 85, 247, 0.25);
+    }
+    .form-control-dark::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+</style>
+{% endblock %}

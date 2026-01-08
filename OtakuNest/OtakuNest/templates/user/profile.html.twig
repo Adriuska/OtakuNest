@@ -1,0 +1,96 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mi perfil - OtakuNest{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="glass-card p-5">
+            <h1 class="h2 fw-bold mb-4">Mi Perfil</h1>
+            
+            <form method="post">
+                <div class="mb-4">
+                    <label for="username" class="form-label fw-bold">Nombre de usuario</label>
+                    <input type="text" class="form-control form-control-dark" id="username" 
+                           value="{{ app.user.username }}" disabled>
+                    <small class="text-muted">No se puede cambiar</small>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="email" class="form-label fw-bold">Email</label>
+                    <input type="email" class="form-control form-control-dark" id="email" 
+                           value="{{ app.user.email }}" disabled>
+                    <small class="text-muted">No se puede cambiar</small>
+                </div>
+                
+                <div class="row g-3 mb-4">
+                    <div class="col">
+                        <label for="firstName" class="form-label fw-bold">Nombre</label>
+                        <input type="text" class="form-control form-control-dark" id="firstName" name="firstName" 
+                               value="{{ app.user.firstName ?? '' }}">
+                    </div>
+                    <div class="col">
+                        <label for="lastName" class="form-label fw-bold">Apellido</label>
+                        <input type="text" class="form-control form-control-dark" id="lastName" name="lastName" 
+                               value="{{ app.user.lastName ?? '' }}">
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="newPassword" class="form-label fw-bold">Nueva contraseña</label>
+                    <input type="password" class="form-control form-control-dark" id="newPassword" name="newPassword">
+                    <small class="text-muted">Déjalo en blanco si no quieres cambiarla</small>
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-warning fw-bold flex-grow-1">
+                        <i class="fa-solid fa-save"></i> Guardar cambios
+                    </button>
+                    <a href="{{ path('app_dashboard') }}" class="btn btn-outline-light">
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+            
+            <hr class="my-4 border-secondary">
+            
+            <div class="mb-4">
+                <h5 class="fw-bold mb-3">Información de la cuenta</h5>
+                <p class="text-muted small mb-2">
+                    <i class="fa-solid fa-calendar"></i> 
+                    Registrado el {{ app.user.createdAt|date('d/m/Y') }}
+                </p>
+                {% if app.user.updatedAt %}
+                <p class="text-muted small mb-2">
+                    <i class="fa-solid fa-refresh"></i> 
+                    Última actualización: {{ app.user.updatedAt|date('d/m/Y H:i') }}
+                </p>
+                {% endif %}
+                <p class="text-muted small">
+                    <i class="fa-solid fa-shield"></i> 
+                    Rol: <span class="text-warning fw-bold">{{ app.user.roles|first }}</span>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control-dark,
+    .form-select-dark {
+        background-color: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #f3f4ff;
+    }
+    .form-control-dark:focus,
+    .form-select-dark:focus {
+        background-color: rgba(255, 255, 255, 0.08);
+        border-color: #a855f7;
+        color: #f3f4ff;
+        box-shadow: 0 0 0 0.25rem rgba(168, 85, 247, 0.25);
+    }
+    .form-control-dark:disabled {
+        opacity: 0.6;
+    }
+</style>
+{% endblock %}

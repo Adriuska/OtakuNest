@@ -1,0 +1,88 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Editar {{ library.name }} - OtakuNest{% endblock %}
+
+{% block body %}
+<div class="mb-4">
+    <a href="{{ path('app_library_show', {id: library.id}) }}" class="text-decoration-none text-muted small mb-2 d-inline-block">
+        <i class="fa-solid fa-arrow-left"></i> Volver
+    </a>
+    <h1 class="h2 fw-bold mb-1">Editar Biblioteca</h1>
+    <p class="text-muted">Actualiza los detalles de tu biblioteca</p>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="glass-card p-5">
+            <form method="post" action="{{ path('app_library_edit', {id: library.id}) }}">
+                <div class="mb-4">
+                    <label for="name" class="form-label">Nombre de la biblioteca</label>
+                    <input type="text" class="form-control form-control-dark" id="name" name="name" value="{{ library.name }}" required>
+                </div>
+
+                <div class="mb-4">
+                    <label for="description" class="form-label">Descripción</label>
+                    <textarea class="form-control form-control-dark" id="description" name="description" rows="4">{{ library.description }}</textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label for="visibility" class="form-label">Visibilidad</label>
+                    <select class="form-select form-control-dark" id="visibility" name="visibility">
+                        <option value="private" {% if library.visibility == 'private' %}selected{% endif %}>
+                            <i class="fa-solid fa-lock"></i> Privada
+                        </option>
+                        <option value="public" {% if library.visibility == 'public' %}selected{% endif %}>
+                            <i class="fa-solid fa-globe"></i> Pública
+                        </option>
+                    </select>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-warning flex-grow-1">
+                        <i class="fa-solid fa-save"></i> Guardar cambios
+                    </button>
+                    <a href="{{ path('app_library_show', {id: library.id}) }}" class="btn btn-outline-warning">
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="glass-card p-5">
+            <h3 class="fw-bold mb-4">Información de la Biblioteca</h3>
+            
+            <div class="mb-4">
+                <p class="text-muted small mb-1">CREADA</p>
+                <p class="fw-bold">{{ library.createdAt|date('d/m/Y H:i') }}</p>
+            </div>
+
+            <div class="mb-4">
+                <p class="text-muted small mb-1">ÚLTIMA ACTUALIZACIÓN</p>
+                <p class="fw-bold">{{ library.updatedAt|date('d/m/Y H:i') }}</p>
+            </div>
+
+            <div class="mb-4">
+                <p class="text-muted small mb-1">ANIMES EN LA BIBLIOTECA</p>
+                <p class="fw-bold">{{ library.items|length }}</p>
+            </div>
+
+            <div class="mb-4">
+                <p class="text-muted small mb-1">ESTADO</p>
+                <p>
+                    {% if library.visibility == 'public' %}
+                        <span class="badge bg-success">
+                            <i class="fa-solid fa-globe"></i> Pública
+                        </span>
+                    {% else %}
+                        <span class="badge bg-secondary">
+                            <i class="fa-solid fa-lock"></i> Privada
+                        </span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

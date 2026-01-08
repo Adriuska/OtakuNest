@@ -1,0 +1,62 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Registro - OtakuNest{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="glass-card p-5">
+            <h1 class="h2 fw-bold mb-4 text-center">Crea tu cuenta</h1>
+            
+            {% set errors = errors|default([]) %}
+            {% if errors|length > 0 %}
+            <div class="alert alert-danger" role="alert">
+                {% for error in errors %}
+                <div><i class="fa-solid fa-exclamation-circle"></i> {{ error }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <form method="post">
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control form-control-dark" id="email" name="email" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="username" class="form-label">Nombre de usuario</label>
+                    <input type="text" class="form-control form-control-dark" id="username" name="username" required>
+                </div>
+                
+                <div class="row g-3 mb-3">
+                    <div class="col">
+                        <label for="firstName" class="form-label">Nombre</label>
+                        <input type="text" class="form-control form-control-dark" id="firstName" name="firstName">
+                    </div>
+                    <div class="col">
+                        <label for="lastName" class="form-label">Apellido</label>
+                        <input type="text" class="form-control form-control-dark" id="lastName" name="lastName">
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="password" class="form-label">Contraseña</label>
+                    <input type="password" class="form-control form-control-dark" id="password" name="password" required>
+                    <small class="text-muted">Mínimo 6 caracteres</small>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="confirmPassword" class="form-label">Confirmar contraseña</label>
+                    <input type="password" class="form-control form-control-dark" id="confirmPassword" name="confirmPassword" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary w-100 fw-bold mb-3">Registrarse</button>
+                
+                <p class="text-center text-white small mb-0">
+                    ¿Ya tienes cuenta? <a href="{{ path('app_login') }}" class="text-warning">Inicia sesión</a>
+                </p>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

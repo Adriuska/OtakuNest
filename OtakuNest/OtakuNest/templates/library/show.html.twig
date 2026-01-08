@@ -1,0 +1,121 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ library.name }} - OtakuNest{% endblock %}
+
+{% block body %}
+<div class="mb-4 d-flex justify-content-between align-items-center">
+    <div>
+        <a href="{{ path('app_library_list') }}" class="text-decoration-none text-muted small mb-2 d-inline-block">
+            <i class="fa-solid fa-arrow-left"></i> Volver
+        </a>
+        <h1 class="h2 fw-bold mb-1">{{ library.name }}</h1>
+        {% if library.description %}
+        <p class="text-muted mb-0">{{ library.description }}</p>
+        {% endif %}
+        <p class="text-muted small mt-2">📺 {{ items|length }} animes</p>
+    </div>
+    {% if app.user == library.owner %}
+    <div class="dropdown">
+        <button class="btn btn-dark dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            <i class="fa-solid fa-ellipsis"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="{{ path('app_library_edit', {id: library.id}) }}"><i class="fa-solid fa-pen"></i> Editar</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+                <form method="post" action="{{ path('app_library_delete', {id: library.id}) }}" onsubmit="return confirm('¿Eliminar esta biblioteca?');">
+                    <button type="submit" class="dropdown-item text-danger"><i class="fa-solid fa-trash"></i> Eliminar biblioteca</button>
+                </form>
+            </li>
+        </ul>
+    </div>
+    {% endif %}
+</div>
+
+{% if items|length > 0 %}
+<div class="row g-4">
+    {% for item in items %}
+    <div class="col-lg-3 col-md-4 col-sm-6">
+        <div class="glass-card overflow-hidden h-100">
+            <div style="height: 380px; overflow: hidden; background: rgba(124, 58, 237, 0.1);">
+                {% if item.image %}
+                <img src="{{ item.image }}" alt="{{ item.title }}" 
+                     class="w-100 h-100" style="object-fit: cover; transition: transform 0.3s ease;" loading="lazy">
+                {% else %}
+                <div class="w-100 h-100 bg-secondary d-flex align-items-center justify-content-center">
+                    <i class="fa-solid fa-image text-muted fa-3x"></i>
+                </div>
+                {% endif %}
+            </div>
+            <div class="p-3">
+                <h6 class="fw-bold mb-2 text-truncate">{{ item.title }}</h6>
+                
+                <div class="mb-3">
+                    <small class="badge" style="background-color: {{ item.status == 'watching' ? '#28a745' : item.status == 'completed' ? '#007bff' : item.status == 'planned' ? '#ffc107' : '#6c757d' }}; color: white;">
+                        {% if item.status == 'watching' %}
+                            <i class="fa-solid fa-play"></i> Viendo
+                        {% elseif item.status == 'completed' %}
+                            <i class="fa-solid fa-check"></i> Completado
+                        {% elseif item.status == 'planned' %}
+                            <i class="fa-solid fa-bookmark"></i> Planeado
+                        {% else %}
+                            {{ item.status|capitalize }}
+                        {% endif %}
+                    </small>
+                </div>
+                
+                <button type="button" class="btn btn-sm btn-danger w-100 delete-item-btn" data-item-id="{{ item.id }}">
+                    <i class="fa-solid fa-trash"></i> Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="glass-card p-5 text-center">
+    <i class="fa-solid fa-inbox fa-4x text-muted mb-4"></i>
+    <h3 class="fw-bold mb-2">Biblioteca vacía</h3>
+    <p class="text-muted mb-4">Añade animes a esta biblioteca para verlos aquí</p>
+    {% if app.user == library.owner %}
+    <a href="{{ path('app_anime_list') }}" class="btn btn-warning btn-lg">
+        <i class="fa-solid fa-magnifying-glass"></i> Explorar animes
+    </a>
+    {% endif %}
+</div>
+{% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Eliminar item de biblioteca
+    document.querySelectorAll('.delete-item-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            if (!confirm('¿Eliminar de la biblioteca?')) return;
+            
+            const itemId = this.getAttribute('data-item-id');
+            
+            fetch('/library-item/' + itemId, {
+                method: 'DELETE',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    this.closest('.col-lg-3').remove();
+                    alert('✓ Eliminado de la biblioteca');
+                    // Recargar página para actualizar contador
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            })
+            .catch(error => {
+                alert('Error: ' + error.message);
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

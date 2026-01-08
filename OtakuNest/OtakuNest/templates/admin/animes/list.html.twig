@@ -1,0 +1,71 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestión de animes - OtakuNest{% endblock %}
+
+{% block body %}
+<div class="mb-4 d-flex justify-content-between align-items-center">
+    <h1 class="h2 fw-bold mb-0">Gestión de Animes</h1>
+    <a href="{{ path('app_admin_anime_create') }}" class="btn btn-warning">
+        <i class="fa-solid fa-plus"></i> Nuevo anime
+    </a>
+</div>
+
+{% if animes|length > 0 %}
+<div class="glass-card p-4 table-responsive">
+    <table class="table table-dark table-striped table-hover mb-0">
+        <thead>
+            <tr>
+                <th>Título</th>
+                <th>Año</th>
+                <th>Estado</th>
+                <th>Episodios</th>
+                <th>Rating</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for anime in animes %}
+            <tr>
+                <td>
+                    <strong class="text-truncate">{{ anime.title }}</strong>
+                </td>
+                <td class="text-muted">{{ anime.year ?? '-' }}</td>
+                <td>
+                    <span class="badge bg-secondary">{{ anime.status }}</span>
+                </td>
+                <td class="text-muted">{{ anime.totalEpisodes ?? '-' }}</td>
+                <td class="text-warning">
+                    {% if anime.rating %}
+                    {{ anime.rating|round(1) }}/10
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="btn-group btn-group-sm">
+                        <a href="{{ path('app_admin_anime_edit', {id: anime.id}) }}" class="btn btn-outline-warning">
+                            <i class="fa-solid fa-edit"></i>
+                        </a>
+                        <form method="post" action="{{ path('app_admin_anime_delete', {id: anime.id}) }}" style="display: inline;">
+                            <button type="submit" class="btn btn-outline-danger" onclick="return confirm('¿Eliminar?')">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="glass-card p-5 text-center">
+    <i class="fa-solid fa-inbox fa-4x text-muted mb-4"></i>
+    <h3 class="fw-bold mb-2">No hay animes</h3>
+    <p class="text-muted mb-4">Crea tu primer anime en la plataforma</p>
+    <a href="{{ path('app_admin_anime_create') }}" class="btn btn-warning">
+        <i class="fa-solid fa-plus"></i> Crear anime
+    </a>
+</div>
+{% endif %}
+{% endblock %}

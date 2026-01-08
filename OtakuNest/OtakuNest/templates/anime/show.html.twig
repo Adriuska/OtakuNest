@@ -1,0 +1,196 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ anime.title }} - OtakuNest{% endblock %}
+
+{% block body %}
+<div class="row g-4 mb-5">
+    <div class="col-md-3">
+        <div class="glass-card overflow-hidden sticky-top" style="top: 20px;">
+            <img src="{{ anime.coverUrl }}" alt="{{ anime.title }}" class="w-100">
+            <div class="p-4">
+                {% if app.user %}
+                <button class="btn btn-warning w-100 mb-2 favorite-toggle" data-anime-id="{{ anime.id }}">
+                    <i class="fa-solid fa-heart"></i> Añadir a favoritos
+                </button>
+                {% if app.user.libraries|length > 0 %}
+                <form id="addLibraryForm" method="POST" action="{{ path('app_library_add_anime', {id: app.user.libraries|first.id}) }}" class="mb-2">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('add_anime_to_library') }}">
+                    <input type="hidden" name="animeId" value="{{ anime.id }}">
+                    <div class="d-flex gap-2">
+                        <select name="status" class="form-select form-select-sm" style="color: white; background-color: rgba(255,255,255,0.1);">
+                            <option value="planned" style="background-color: #1a1a2e; color: white;">Para ver</option>
+                            <option value="watching" style="background-color: #1a1a2e; color: white;">Viendo</option>
+                            <option value="completed" style="background-color: #1a1a2e; color: white;">Completado</option>
+                            <option value="dropped" style="background-color: #1a1a2e; color: white;">Abandonado</option>
+                        </select>
+                        <button type="submit" class="btn btn-outline-light btn-sm" style="white-space: nowrap;">
+                            <i class="fa-solid fa-bookmark"></i> Agregar
+                        </button>
+                    </div>
+                </form>
+                {% else %}
+                <a href="{{ path('app_library_create') }}" class="btn btn-outline-light w-100">
+                    <i class="fa-solid fa-bookmark"></i> Crear biblioteca
+                </a>
+                {% endif %}
+                {% else %}
+                <p class="text-muted text-center small mb-0">
+                    <a href="{{ path('app_register') }}" class="text-warning">Inicia sesión</a> para guardar este anime
+                </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-9">
+        <div class="glass-card p-5">
+            <h1 class="display-6 fw-bold mb-2">{{ anime.title }}</h1>
+            
+            <div class="row g-3 mb-4">
+                {% if anime.year %}
+                <div class="col-auto">
+                    <span class="badge bg-secondary">{{ anime.year }}</span>
+                </div>
+                {% endif %}
+                
+                {% if anime.rating %}
+                <div class="col-auto">
+                    <span class="badge bg-warning text-dark">
+                        <i class="fa-solid fa-star"></i> {{ anime.rating|round(1) }}/10
+                    </span>
+                </div>
+                {% endif %}
+                
+                {% if anime.status %}
+                <div class="col-auto">
+                    <span class="badge bg-info">{{ anime.status }}</span>
+                </div>
+                {% endif %}
+                
+                {% if anime.totalEpisodes %}
+                <div class="col-auto">
+                    <span class="badge bg-secondary">{{ anime.totalEpisodes }} episodios</span>
+                </div>
+                {% endif %}
+            </div>
+            
+            {% if anime.genres|length > 0 %}
+            <div class="mb-4">
+                <h5 class="small text-uppercase text-muted mb-2">Géneros</h5>
+                <div>
+                    {% for genre in anime.genres %}
+                    <a href="{{ path('app_anime_list', {genre: genre.id}) }}" class="badge bg-secondary text-decoration-none me-2">{{ genre.name }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if anime.description %}
+            <div class="mb-4">
+                <h5 class="small text-uppercase text-muted mb-2">Sinopsis</h5>
+                <p class="text-secondary">{{ anime.description|raw }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Episodios -->
+{% if anime.episodes|length > 0 %}
+<section class="mb-5">
+    <h2 class="h3 fw-bold mb-4">Episodios ({{ anime.episodes|length }})</h2>
+    
+    <div class="glass-card p-4">
+        <div class="list-group list-group-flush">
+            {% for episode in anime.episodes %}
+            <div class="list-group-item glass-card mb-2 p-3 d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="fw-bold mb-1">
+                        Ep. {{ episode.number }}: {{ episode.title }}
+                    </h6>
+                    {% if episode.airDate %}
+                    <p class="text-muted small mb-0">
+                        <i class="fa-solid fa-calendar"></i> 
+                        {{ episode.airDate|date('d/m/Y') }}
+                        {% if episode.durationMinutes %}
+                        • {{ episode.durationMinutes }} min
+                        {% endif %}
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<style>
+    .list-group-item {
+        background-color: rgba(255, 255, 255, 0.04);
+        border-color: rgba(255, 255, 255, 0.08);
+        color: #f3f4ff;
+    }
+    .list-group-item:hover {
+        background-color: rgba(255, 255, 255, 0.08);
+    }
+    .sticky-top {
+        z-index: 100;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ========== FAVORITOS ==========
+    const favoriteBtn = document.querySelector('.favorite-toggle');
+    if (favoriteBtn) {
+        favoriteBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const animeId = this.getAttribute('data-anime-id');
+            
+            fetch('/favorite/toggle/' + animeId, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.status === 'added') {
+                    favoriteBtn.innerHTML = '<i class="fa-solid fa-heart"></i> En favoritos';
+                    favoriteBtn.classList.add('active');
+                    showNotification('✓ Añadido a favoritos', 'success');
+                } else if (result.status === 'removed') {
+                    favoriteBtn.innerHTML = '<i class="fa-solid fa-heart"></i> Añadir a favoritos';
+                    favoriteBtn.classList.remove('active');
+                    showNotification('✓ Removido de favoritos', 'success');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Error: ' + error.message, 'error');
+            });
+        });
+    }
+});
+
+// Función para mostrar notificaciones
+function showNotification(message, type = 'info') {
+    const alert = document.createElement('div');
+    alert.className = 'alert alert-' + (type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info') + ' alert-dismissible fade show';
+    alert.setAttribute('role', 'alert');
+    alert.style.position = 'fixed';
+    alert.style.top = '20px';
+    alert.style.right = '20px';
+    alert.style.zIndex = '9999';
+    alert.style.minWidth = '300px';
+    alert.innerHTML = message + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+    
+    document.body.appendChild(alert);
+    
+    setTimeout(() => {
+        alert.remove();
+    }, 3000);
+}
+</script>
+{% endblock %}

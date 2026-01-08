@@ -1,0 +1,73 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Estadísticas - OtakuNest{% endblock %}
+
+{% block body %}
+<h1 class="h2 fw-bold mb-4">Mis Estadísticas</h1>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <div class="glass-card p-4 text-center">
+            <i class="fa-solid fa-play fa-2x text-info mb-3"></i>
+            <h5 class="fw-bold">{{ totalSeen }}</h5>
+            <p class="text-muted small mb-0">Episodios vistos</p>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="glass-card p-4 text-center">
+            <i class="fa-solid fa-video fa-2x text-warning mb-3"></i>
+            <h5 class="fw-bold">{{ totalEpisodes }}</h5>
+            <p class="text-muted small mb-0">Episodios rastreados</p>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="glass-card p-4 text-center">
+            <i class="fa-solid fa-chart-pie fa-2x text-success mb-3"></i>
+            <h5 class="fw-bold">
+                {% if totalEpisodes > 0 %}
+                    {{ ((totalSeen / totalEpisodes) * 100)|round(0) }}%
+                {% else %}
+                    0%
+                {% endif %}
+            </h5>
+            <p class="text-muted small mb-0">Progreso general</p>
+        </div>
+    </div>
+</div>
+
+<section>
+    <h2 class="h3 fw-bold mb-4">Historial reciente</h2>
+    
+    {% if progressRecords|length > 0 %}
+    <div class="glass-card p-4">
+        <div class="list-group list-group-flush">
+            {% for progress in progressRecords|slice(0, 10) %}
+            {% if progress.seen %}
+            <div class="list-group-item glass-card p-3 mb-2 d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="fw-bold mb-1">
+                        {{ progress.episode.anime.title }} - Ep. {{ progress.episode.number }}
+                    </h6>
+                    {% if progress.seenAt %}
+                    <p class="text-muted small mb-0">
+                        <i class="fa-solid fa-clock"></i> 
+                        {{ progress.seenAt|date('d/m/Y H:i') }}
+                    </p>
+                    {% endif %}
+                </div>
+                <span class="badge bg-success">Visto</span>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="glass-card p-5 text-center">
+        <i class="fa-solid fa-inbox fa-3x text-muted mb-3"></i>
+        <p class="text-muted">No hay registros de visualización</p>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

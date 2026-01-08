@@ -1,0 +1,66 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Editar usuario - OtakuNest{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="glass-card p-5">
+            <h1 class="h2 fw-bold mb-4">Editar Usuario</h1>
+            
+            <form method="post">
+                <div class="mb-4">
+                    <label for="email" class="form-label fw-bold">Email</label>
+                    <input type="email" class="form-control form-control-dark" id="email" name="email" value="{{ user.email }}" required>
+                </div>
+                
+                <div class="row g-3 mb-4">
+                    <div class="col">
+                        <label for="firstName" class="form-label fw-bold">Nombre</label>
+                        <input type="text" class="form-control form-control-dark" id="firstName" name="firstName" value="{{ user.firstName ?? '' }}">
+                    </div>
+                    <div class="col">
+                        <label for="lastName" class="form-label fw-bold">Apellido</label>
+                        <input type="text" class="form-control form-control-dark" id="lastName" name="lastName" value="{{ user.lastName ?? '' }}">
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="roles" class="form-label fw-bold">Rol</label>
+                    <select class="form-select form-select-dark" id="roles" name="roles[]" multiple>
+                        <option value="ROLE_USER" {% if 'ROLE_USER' in user.roles %}selected{% endif %}>Usuario normal</option>
+                        <option value="ROLE_MANAGER" {% if 'ROLE_MANAGER' in user.roles %}selected{% endif %}>Gestor de contenido</option>
+                        <option value="ROLE_ADMIN" {% if 'ROLE_ADMIN' in user.roles %}selected{% endif %}>Administrador</option>
+                    </select>
+                    <small class="text-muted">Selecciona al menos un rol</small>
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-warning fw-bold flex-grow-1">
+                        <i class="fa-solid fa-save"></i> Guardar cambios
+                    </button>
+                    <a href="{{ path('app_admin_users') }}" class="btn btn-outline-light">
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control-dark,
+    .form-select-dark {
+        background-color: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #f3f4ff;
+    }
+    .form-control-dark:focus,
+    .form-select-dark:focus {
+        background-color: rgba(255, 255, 255, 0.08);
+        border-color: #a855f7;
+        color: #f3f4ff;
+        box-shadow: 0 0 0 0.25rem rgba(168, 85, 247, 0.25);
+    }
+</style>
+{% endblock %}

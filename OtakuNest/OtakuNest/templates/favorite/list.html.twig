@@ -1,0 +1,229 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mis favoritos - OtakuNest{% endblock %}
+
+{% block body %}
+<div class="mb-4">
+    <h1 class="h2 fw-bold">Mis Favoritos</h1>
+    <p class="text-muted">{{ favorites|length }} animes</p>
+</div>
+
+{% if favorites|length > 0 %}
+<div class="row g-3">
+    {% for favorite in favorites %}
+    <div class="col-lg-3 col-md-6" id="favorite-{{ favorite.id }}">
+        <div class="glass-card h-100 favorite-card-item" data-anime-id="{{ favorite.malId }}" style="cursor: pointer;">
+            <div style="height: 450px; overflow: hidden; background: rgba(124, 58, 237, 0.1); position: relative;">
+                {% if favorite.image %}
+                <img src="{{ favorite.image }}" alt="{{ favorite.title }}" 
+                     class="w-100 h-100" style="object-fit: cover; object-position: center; display: block; image-rendering: auto; -webkit-font-smoothing: antialiased; transform: translateZ(0);" loading="lazy">
+                {% else %}
+                <div class="w-100 h-100 bg-secondary d-flex align-items-center justify-content-center">
+                    <i class="fa-solid fa-image text-muted fa-4x"></i>
+                </div>
+                {% endif %}
+            </div>
+            <div class="p-3">
+                <h6 class="fw-bold mb-3 text-truncate">{{ favorite.title }}</h6>
+                
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-sm btn-danger w-100 delete-favorite-btn" data-favorite-id="{{ favorite.id }}">
+                        <i class="fa-solid fa-trash"></i> Eliminar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% else %}
+<div class="glass-card p-5 text-center">
+    <i class="fa-solid fa-heart fa-4x text-muted mb-4"></i>
+    <h3 class="fw-bold mb-2">No tienes favoritos</h3>
+    <p class="text-muted mb-4">Marca tus animes favoritos para verlos aquí</p>
+    <a href="{{ path('app_anime_list') }}" class="btn btn-warning btn-lg">
+        <i class="fa-solid fa-magnifying-glass"></i> Explorar animes
+    </a>
+</div>
+{% endif %}
+
+<!-- Modal de detalles del anime -->
+<div class="modal fade" id="animeDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content bg-dark border-secondary" style="max-height: 85vh;">
+            <div class="modal-header border-secondary py-3">
+                <h5 class="modal-title" id="animeModalTitle">Cargando...</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" style="overflow-y: auto; max-height: calc(85vh - 80px);">
+                <div id="animeDetailContent">
+                    <div class="text-center">
+                        <div class="spinner-border text-warning" role="status">
+                            <span class="visually-hidden">Cargando...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let animeCache = {};
+
+// Cargar detalles del anime desde la API
+function loadAnimeDetails(malId) {
+    if (!malId) {
+        showNotification('Este anime no tiene información disponible', 'warning');
+        return;
+    }
+
+    const content = document.getElementById('animeDetailContent');
+    const titleEl = document.getElementById('animeModalTitle');
+    
+    console.log('Cargando anime con ID:', malId);
+    
+    if (animeCache[malId]) {
+        renderAnimeDetails(animeCache[malId]);
+        return;
+    }
+    
+    content.innerHTML = '<div class="text-center"><div class="spinner-border text-warning" role="status"><span class="visually-hidden">Cargando...</span></div></div>';
+    
+    fetch('/anime/' + malId)
+        .then(response => {
+            console.log('Respuesta status:', response.status);
+            return response.json();
+        })
+        .then(result => {
+            console.log('Resultado:', result);
+            if (result.success && result.data) {
+                animeCache[malId] = result.data;
+                renderAnimeDetails(result.data);
+            } else {
+                content.innerHTML = '<p class="text-danger">Error al cargar detalles: ' + (result.error || 'Desconocido') + '</p>';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            content.innerHTML = '<p class="text-danger">Error: ' + error.message + '</p>';
+        });
+}
+
+// Renderizar detalles del anime
+function renderAnimeDetails(anime) {
+    const content = document.getElementById('animeDetailContent');
+    const titleEl = document.getElementById('animeModalTitle');
+    
+    if (titleEl) titleEl.textContent = anime.title || 'Sin título';
+    
+    let html = '<div class="row g-3">';
+    html += '<div class="col-md-4">';
+    html += '<img src="' + (anime.image || '') + '" alt="' + (anime.title || 'Anime') + '" class="w-100 rounded" style="height: 280px; object-fit: cover; image-rendering: crisp-edges;">';
+    html += '</div>';
+    html += '<div class="col-md-8">';
+    html += '<h6 class="text-muted small mb-2">INFORMACIÓN</h6>';
+    html += '<p class="mb-1 small"><strong>Tipo:</strong> ' + (anime.type || 'N/A') + '</p>';
+    html += '<p class="mb-1 small"><strong>Estado:</strong> ' + (anime.status || 'N/A') + '</p>';
+    html += '<p class="mb-1 small"><strong>Episodios:</strong> ' + (anime.episodes || 'N/A') + '</p>';
+    html += '<p class="mb-1 small"><strong>Año:</strong> ' + (anime.year || 'N/A') + '</p>';
+    html += '<p class="mb-2 small"><strong>Rating:</strong> ' + (anime.rating ? anime.rating + '/10' : 'N/A') + '</p>';
+    
+    if (anime.genres && anime.genres.length > 0) {
+        html += '<div class="mb-3"><strong class="d-block text-muted small mb-1">Géneros:</strong>';
+        anime.genres.forEach(function(g) {
+            html += '<span class="badge bg-secondary me-1 mb-1">' + g + '</span>';
+        });
+        html += '</div>';
+    }
+    
+    html += '</div></div>';
+    
+    if (anime.description) {
+        html += '<div class="mt-3"><h6 class="text-muted small mb-2">SINOPSIS</h6>';
+        html += '<p class="text-light" style="font-size: 0.85rem; line-height: 1.5; margin-bottom: 0;">' + anime.description + '</p></div>';
+    }
+    
+    content.innerHTML = html;
+}
+
+// Eliminar favorito
+function deleteFavorite(favoriteId) {
+    if (!confirm('¿Eliminar de favoritos?')) return;
+    
+    console.log('Eliminando favorito:', favoriteId);
+    
+    fetch('/favorite/' + favoriteId, {
+        method: 'DELETE',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+        }
+    })
+    .then(response => response.json())
+    .then(result => {
+        console.log('Respuesta:', result);
+        if (result.success) {
+            const container = document.getElementById('favorite-' + favoriteId);
+            if (container) {
+                container.remove();
+                console.log('Elemento eliminado');
+            }
+            showNotification('✓ Eliminado de favoritos', 'success');
+        } else {
+            showNotification('Error: ' + (result.message || 'No se pudo eliminar'), 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error: ' + error.message, 'error');
+    });
+}
+
+// Mostrar notificación
+function showNotification(message, type = 'info') {
+    const alert = document.createElement('div');
+    alert.className = 'alert alert-' + (type === 'success' ? 'success' : type === 'error' ? 'danger' : 'warning') + ' alert-dismissible fade show';
+    alert.setAttribute('role', 'alert');
+    alert.style.position = 'fixed';
+    alert.style.top = '20px';
+    alert.style.right = '20px';
+    alert.style.zIndex = '9999';
+    alert.style.minWidth = '300px';
+    alert.innerHTML = message + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+    
+    document.body.appendChild(alert);
+    
+    setTimeout(() => {
+        alert.remove();
+    }, 3000);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Click en tarjeta para ver detalles
+    document.querySelectorAll('.favorite-card-item').forEach(card => {
+        card.addEventListener('click', function(e) {
+            // No abrir modal si se hace click en el botón delete
+            if (e.target.closest('.delete-favorite-btn')) return;
+            
+            const animeId = this.getAttribute('data-anime-id');
+            console.log('Abriendo anime:', animeId);
+            loadAnimeDetails(animeId);
+            const modal = new bootstrap.Modal(document.getElementById('animeDetailModal'));
+            modal.show();
+        });
+    });
+    
+    // Click en botón delete
+    document.querySelectorAll('.delete-favorite-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            
+            const favoriteId = this.getAttribute('data-favorite-id');
+            deleteFavorite(favoriteId);
+        });
+    });
+});
+</script>
+
+{% endblock %}

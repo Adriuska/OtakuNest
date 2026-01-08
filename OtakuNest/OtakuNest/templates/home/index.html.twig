@@ -1,0 +1,167 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}OtakuNest · Tu refugio anime{% endblock %}
+
+{% block body %}
+<div class="row g-4 align-items-center mb-5">
+    <div class="col-lg-6">
+        <div class="glass-card p-5 h-100">
+            <p class="text-uppercase mb-2 small" style="background: linear-gradient(135deg, #7c3aed, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">✨ Nuevo universo</p>
+            <h1 class="display-5 fw-bold mb-4" style="color: #f1f5f9;">Organiza, descubre y comparte tus animes favoritos</h1>
+            <p class="text-muted mb-4">Catálogo enriquecido con AniList, control de progreso episodio a episodio y estadísticas dinámicas para los fans más exigentes.</p>
+            <div class="d-flex flex-column flex-sm-row gap-3">
+                <a href="{{ path('app_anime_list') }}" class="btn btn-primary btn-lg px-4" style="background: linear-gradient(135deg, #7c3aed, #6d28d9); border: none; color: #fff !important;">
+                    <i class="fas fa-search"></i> Explorar catálogo
+                </a>
+                {% if not app.user %}
+                <a href="{{ path('app_register') }}" class="btn btn-outline-primary btn-lg px-4">
+                    <i class="fas fa-user-plus"></i> Crear cuenta
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="glass-card p-4">
+            <div class="row g-3">
+                <div class="col-6">
+                    <div class="p-4 text-center rounded-4 h-100" style="background: rgba(124, 58, 237, 0.1); border: 1px solid rgba(124, 58, 237, 0.2);">
+                        <p class="text-uppercase text-muted small mb-1">Animes</p>
+                        <p class="display-6 fw-bold mb-0" style="background: linear-gradient(135deg, #7c3aed, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">{{ totalAnimes }}</p>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="p-4 text-center rounded-4 h-100" style="background: rgba(236, 72, 153, 0.1); border: 1px solid rgba(236, 72, 153, 0.2);">
+                        <p class="text-uppercase text-muted small mb-1">Usuarios</p>
+                        <p class="display-6 fw-bold mb-0" style="background: linear-gradient(135deg, #ec4899, #f472b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">{{ totalUsers }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Animes destacados -->
+{% if featured|length > 0 %}
+<section class="mb-5">
+    <h2 class="text-uppercase fw-bold mb-4" style="background: linear-gradient(135deg, #7c3aed, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"><i class="fa-solid fa-star"></i> ✨ Destacados</h2>
+    <div class="row g-4">
+        {% for anime in featured %}
+        <div class="col-lg-4 col-md-6">
+            <div class="glass-card overflow-hidden h-100 transition-all hover-lift">
+                <div class="position-relative" style="height: 250px; overflow: hidden;">
+                    <img src="{{ anime.coverUrl }}" alt="{{ anime.title }}" class="w-100 h-100" style="object-fit: cover; transition: transform 0.3s ease;">
+                    <div class="position-absolute top-0 end-0 m-2">
+                        <span class="badge" style="background: linear-gradient(135deg, #ec4899, #be185d);">
+                            <i class="fas fa-star"></i> {{ anime.rating ? (anime.rating|round(1)) : 'N/A' }}/10
+                        </span>
+                    </div>
+                </div>
+                <div class="p-3">
+                    <h5 class="fw-bold mb-2 text-truncate">{{ anime.title }}</h5>
+                    <a href="{{ path('app_anime_show', {slug: anime.slug}) }}" class="btn btn-sm btn-primary w-100" style="background: linear-gradient(135deg, #7c3aed, #6d28d9); border: none;">Ver detalles</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- Animes populares -->
+{% if popular|length > 0 %}
+<section class="mb-5">
+    <h2 class="text-uppercase fw-bold mb-4" style="background: linear-gradient(135deg, #ef4444, #f87171); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"><i class="fa-solid fa-fire"></i> 🔥 Lo más visto</h2>
+    <div class="row g-4">
+        {% for anime in popular %}
+        <div class="col-lg-4 col-md-6">
+            <div class="glass-card overflow-hidden h-100 transition-all hover-lift">
+                <div class="position-relative" style="height: 250px; overflow: hidden;">
+                    <img src="{{ anime.coverUrl }}" alt="{{ anime.title }}" class="w-100 h-100" style="object-fit: cover; transition: transform 0.3s ease;">
+                    <div class="position-absolute top-0 end-0 m-2">
+                        <span class="badge" style="background: linear-gradient(135deg, #10b981, #059669);">
+                            <i class="fas fa-fire"></i> Hot
+                        </span>
+                    </div>
+                </div>
+                <div class="p-3">
+                    <h5 class="fw-bold mb-2 text-truncate">{{ anime.title }}</h5>
+                    <a href="{{ path('app_anime_show', {slug: anime.slug}) }}" class="btn btn-sm btn-secondary w-100" style="background: linear-gradient(135deg, #ec4899, #be185d); border: none;">Ver detalles</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- Animes recientes -->
+{% if recent|length > 0 %}
+<section class="mb-5">
+    <h2 class="text-uppercase fw-bold mb-4" style="background: linear-gradient(135deg, #06b6d4, #0891b2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"><i class="fa-solid fa-clock"></i> ⏰ Añadidos recientemente</h2>
+    <div class="row g-4">
+        {% for anime in recent %}
+        <div class="col-lg-4 col-md-6">
+            <div class="glass-card overflow-hidden h-100 transition-all hover-lift">
+                <div class="position-relative" style="height: 250px; overflow: hidden;">
+                    <img src="{{ anime.coverUrl }}" alt="{{ anime.title }}" class="w-100 h-100" style="object-fit: cover; transition: transform 0.3s ease;">
+                    <div class="position-absolute top-0 end-0 m-2">
+                        <span class="badge" style="background: linear-gradient(135deg, #06b6d4, #0891b2);">
+                            <i class="fas fa-sparkles"></i> Nuevo
+                        </span>
+                    </div>
+                </div>
+                <div class="p-3">
+                    <h5 class="fw-bold mb-2 text-truncate">{{ anime.title }}</h5>
+                    <a href="{{ path('app_anime_show', {slug: anime.slug}) }}" class="btn btn-sm btn-primary w-100" style="background: linear-gradient(135deg, #06b6d4, #0891b2); border: none;">Ver detalles</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<style>
+    .hover-lift {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .glass-card:hover.hover-lift {
+        transform: translateY(-8px);
+        box-shadow: 0 25px 50px rgba(168, 85, 247, 0.2);
+    }
+    img {
+        transition: transform 0.3s ease;
+    }
+    .glass-card:hover img {
+        transform: scale(1.05);
+    }
+</style>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const ctx = document.getElementById('homeChart');
+        if (!ctx) {
+            return;
+        }
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Shonen', 'Seinen', 'Slice of Life', 'Isekai'],
+                datasets: [{
+                    data: [35, 25, 20, 20],
+                    backgroundColor: ['#fbbf24', '#a855f7', '#38bdf8', '#f472b6'],
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: { position: 'bottom', labels: { color: '#f3f4ff' } }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}
