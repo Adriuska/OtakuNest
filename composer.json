@@ -63,6 +63,7 @@
             "assets:install %PUBLIC_DIR%": "symfony-cmd",
             "importmap:install": "symfony-cmd"
         },
+        "serve": "php bin/console doctrine:database:create --if-not-exists && php bin/console doctrine:migrations:migrate --no-interaction && php -S 127.0.0.1:8000 -t public",
         "post-install-cmd": [
             "@auto-scripts"
         ],
