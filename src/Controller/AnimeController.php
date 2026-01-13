@@ -20,7 +20,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class AnimeController extends AbstractController
 {
     #[Route('', name: 'app_anime_list', methods: ['GET'])]
-    public function list(Request $request, JikanService $jikanService): Response
+    public function list(Request $request, JikanService $jikanService, GenreRepository $genreRepo): Response
     {
         $search = $request->query->getString('search', '');
         $page = $request->query->getInt('page', 1);
@@ -48,10 +48,26 @@ class AnimeController extends AbstractController
             'genres' => $anime['genres'] ?? [],
         ], $animes);
 
+        // Obtener géneros disponibles desde la BD; si no hay, construir desde los animes cargados
+        $genreEntities = $genreRepo->findBy([], ['name' => 'ASC']);
+        $availableGenres = array_map(fn($g) => $g->getName(), $genreEntities);
+
+        if (empty($availableGenres)) {
+            $set = [];
+            foreach ($animeData as $a) {
+                foreach ($a['genres'] as $g) {
+                    $set[$g] = true;
+                }
+            }
+            $availableGenres = array_values(array_keys($set));
+            sort($availableGenres);
+        }
+
         return $this->render('anime/list.html.twig', [
             'animes' => $animeData,
             'search' => $search,
             'page' => $page,
+            'availableGenres' => $availableGenres,
         ]);
     }
 
